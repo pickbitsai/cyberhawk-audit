@@ -6,19 +6,27 @@ It fetches the latest digest, scans your repo with [`osv-scanner`](https://githu
 
 ## Install
 
+Clone into your user-level skills directory (available in every project):
+
 ```bash
-claude skill add pickbitsai/cyberhawk-audit
+# macOS / Linux
+git clone https://github.com/pickbitsai/cyberhawk-audit ~/.claude/skills/cyberhawk-audit
+
+# Windows (PowerShell)
+git clone https://github.com/pickbitsai/cyberhawk-audit $env:USERPROFILE\.claude\skills\cyberhawk-audit
 ```
+
+Or install it only for the current project:
+
+```bash
+git clone https://github.com/pickbitsai/cyberhawk-audit .claude/skills/cyberhawk-audit
+```
+
+Update later with `git pull` inside that directory.
 
 ## Use
 
-In any project:
-
-```
-/cyberhawk-audit
-```
-
-Or just ask Claude Code to "run a cyberhawk audit" / "check this repo against the latest CVEs".
+In any project, ask Claude Code to "run a cyberhawk audit" or "check this repo against the latest CVEs" — the skill is invoked automatically based on its description.
 
 ## Requirements
 
