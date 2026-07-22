@@ -3,3 +3,17 @@ Thumbs.db
 node_modules/
 *.log
 .env
+
+# Local Claude state and worktrees
+/.claude/
+
+# Local audit scratch files and generated reports
+/.tmp/
+/reports/
+/crossref.py
+/phase1a-report-*.md
+
+# Generated promotional media and site-integration staging
+/demo/output/
+/site-preview/
+/scripts/site-preview-server.mjs

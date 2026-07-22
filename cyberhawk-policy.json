@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "policyName": "CyberHawk zero-trust baseline",
+  "approvedRegistryHosts": [
+    "registry.npmjs.org"
+  ],
+  "closeAfterSuccessfulScans": 2,
+  "requireLockfileIntegrity": true,
+  "quarantineInstallScripts": true,
+  "reviewSeverities": [
+    "CRITICAL",
+    "HIGH"
+  ],
+  "blockPlainHttp": true,
+  "promptInjectionPatterns": [
+    "ignore previous",
+    "ignore all previous",
+    "system prompt",
+    "developer message",
+    "you are chatgpt",
+    "you are claude",
+    "assistant:"
+  ]
+}
