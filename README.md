@@ -29,7 +29,7 @@ The report, SQLite evidence store, npm admission audit, release verifier, defens
 
 Requirements:
 
-- Node.js 22.5 or newer
+- Node.js 22.13 or newer (the evidence store uses the stable `node:sqlite` module, unflagged in 22.13)
 - [OSV-Scanner v2](https://google.github.io/osv-scanner/installation/)
 
 ```bash
@@ -38,10 +38,13 @@ cd pickbits-dependency-audit
 npm ci
 ```
 
-Create an OSV JSON result for a target folder:
+Create an OSV JSON result for a target folder. Use OSV-Scanner's own `--output`
+flag rather than a shell redirect — in Windows PowerShell `>` writes UTF-16 and
+the later steps expect UTF-8 JSON:
 
 ```powershell
-osv-scanner scan source -r --all-packages --format=json C:\path\to\project > reports\osv-result.json
+New-Item -ItemType Directory -Force reports | Out-Null
+osv-scanner scan source -r --all-packages --format=json --output=reports\osv-result.json C:\path\to\project
 ```
 
 OSV-Scanner uses exit code `1` when vulnerabilities are found. That is a completed scan result, not a scanner failure.

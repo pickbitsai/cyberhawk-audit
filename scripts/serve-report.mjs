@@ -10,8 +10,18 @@ if (!fs.existsSync(reportPath) || !fs.statSync(reportPath).isFile()) {
   process.exit(2);
 }
 
+function isLocalHost(hostHeader) {
+  const host = String(hostHeader || "").split(":")[0].toLowerCase();
+  return host === "127.0.0.1" || host === "localhost" || host === "[::1]" || host === "::1" || host === "";
+}
+
 const server = http.createServer((request, response) => {
-  if (request.method !== "GET" || !["/", "/report"].includes(new URL(request.url, `http://${request.headers.host}`).pathname)) {
+  if (!isLocalHost(request.headers.host)) {
+    response.writeHead(403, { "content-type": "text/plain; charset=utf-8" });
+    response.end("Forbidden: non-local Host header");
+    return;
+  }
+  if (request.method !== "GET" || !["/", "/report"].includes(new URL(request.url, `http://127.0.0.1:${port}`).pathname)) {
     response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
     response.end("Not found");
     return;

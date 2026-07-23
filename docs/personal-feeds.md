@@ -17,7 +17,8 @@ node scripts/import-watchlist.mjs `
   --url "https://vbfwzpztnvfktydozgir.supabase.co/functions/v1/cyberhawk-feed/YOUR_TOKEN.xml" `
   --output .pickbits-audit\my-watchlist.txt
 
-osv-scanner scan source -r --all-packages --format=json C:\path\to\project > reports\osv-result.json
+New-Item -ItemType Directory -Force reports | Out-Null
+osv-scanner scan source -r --all-packages --format=json --output=reports\osv-result.json C:\path\to\project
 
 node scripts/generate-report.mjs `
   --scan reports\osv-result.json `

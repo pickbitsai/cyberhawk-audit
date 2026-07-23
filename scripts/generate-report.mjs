@@ -121,7 +121,11 @@ function relativeSource(source) {
 
 function projectFromSource(source) {
   const relative = relativeSource(source);
-  return relative.split(/[\\/]/)[0] || "(root)";
+  const segments = relative.split(/[\\/]/);
+  // Single segment = the lockfile at the target root; use the target's folder
+  // name rather than rendering the lockfile filename as the "project".
+  if (segments.length === 1) return path.win32.basename(path.win32.normalize(target)) || "(root)";
+  return segments[0] || "(root)";
 }
 
 const manifestCache = new Map();
@@ -294,7 +298,16 @@ function weeklySupplementalAudit() {
     for (const affected of advisory.affected || []) {
       if (affected.package?.name) identities.add(affected.package.name.toLowerCase());
       for (const range of affected.ranges || []) {
-        if (range.repo) identities.add(path.posix.basename(new URL(range.repo).pathname).replace(/\.git$/i, "").toLowerCase());
+        // Advisory data is untrusted (per our own trust model): range.repo may be
+        // a malformed or ssh-style URL (git@github.com:x/y.git) that new URL()
+        // throws on — a single bad advisory must not kill the whole run.
+        if (!range.repo) continue;
+        try {
+          identities.add(path.posix.basename(new URL(range.repo).pathname).replace(/\.git$/i, "").toLowerCase());
+        } catch {
+          const tail = String(range.repo).split(/[/:]/).pop();
+          if (tail) identities.add(tail.replace(/\.git$/i, "").toLowerCase());
+        }
       }
     }
     for (const reference of advisory.references || []) {
@@ -391,7 +404,7 @@ const report = {
     target,
     generatedAt,
     watchlistLabel: weekLabel,
-    scanEngine: "OSV-Scanner 2.4.0",
+    scanEngine: "OSV-Scanner",
     scanMode: "read-only, explicit lockfiles, no dependency resolution",
     sourceFiles: sourceFiles.size,
     projects: projectNames.length,
@@ -427,7 +440,7 @@ const html = String.raw`<!doctype html>
 <body>
 <div class="shell">
   <header class="topbar">
-    <div class="brand"><b>CYBER</b>HAWK <span>// LOCAL DEPENDENCY WATCHDOG</span></div>
+    <div class="brand"><b>PICKBITS</b> DEPENDENCY AUDIT <span>// LOCAL DEPENDENCY WATCHDOG</span></div>
     <div class="top-actions">
       <button class="button" id="exportTop">Export report</button>
       <button class="button primary" id="openQueue">Patch queue <span class="queue-count" id="queueCount">0</span></button>
@@ -474,7 +487,7 @@ const html = String.raw`<!doctype html>
       </div>
     </section>
     <section class="section">
-      <div class="section-head"><div><h2>Coverage and trust</h2><div class="section-sub">What this run did—and did not—prove.</div></div></div>
+      <div class="section-head"><div><h2>Coverage and trust</h2><div class="section-sub">What this run did and did not prove.</div></div></div>
       <div class="coverage-grid">
         <article class="coverage-card"><h3>Scan coverage</h3><div class="coverage-list"><span>Dependency inputs</span><strong>${report.meta.sourceFiles}</strong><span>Package occurrences</span><strong>${report.meta.packageOccurrences.toLocaleString()}</strong><span>Unique package coordinates</span><strong>${report.meta.uniquePackageCoordinates.toLocaleString()}</strong><span>Local watchlist CVEs</span><strong>${weeklyCves.length}</strong><span>Watchlist mappings unresolved</span><strong>${report.watchlist.unresolved.length}</strong></div></article>
         <article class="coverage-card"><h3>Safety boundary</h3><p class="muted">This report did not install packages, execute lifecycle scripts, edit manifests, create branches, or push code. Requirements manifests were scanned without remote dependency resolution, so unpinned Python transitive coverage may be incomplete. Findings indicate known vulnerable components, not exploitability or malware.</p></article>

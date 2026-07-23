@@ -25,8 +25,17 @@ const filePath = path.resolve(args.file);
 const bytes = fs.readFileSync(filePath);
 const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
 const apiUrl = `https://api.github.com/repos/${args.repository}/releases/tags/${encodeURIComponent(args.tag)}`;
-  const response = await fetch(apiUrl, { headers: { accept: "application/vnd.github+json", "user-agent": "PickBits-Dependency-Audit/0.5" } });
-if (!response.ok) throw new Error(`Release metadata request failed: ${response.status}`);
+let response;
+try {
+  response = await fetch(apiUrl, { headers: { accept: "application/vnd.github+json", "user-agent": "PickBits-Dependency-Audit/0.5" } });
+} catch (error) {
+  console.error(`Could not reach the GitHub release API (offline or rate-limited): ${error.message}`);
+  process.exit(2);
+}
+if (!response.ok) {
+  console.error(`Release metadata request failed: ${response.status} ${response.statusText}`);
+  process.exit(2);
+}
 const release = await response.json();
 const asset = (release.assets || []).find((item) => item.name === args.asset);
 if (!asset) throw new Error(`Release asset not found: ${args.asset}`);

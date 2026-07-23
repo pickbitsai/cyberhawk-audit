@@ -69,7 +69,7 @@ The figures come from two independently parsed artifacts: structured OSV-Scanner
 
 PickBits Dependency Audit is not “Dependabot on your laptop.” It is an open-source, local vulnerability-response layer for code that may live across many repositories or never reach GitHub. It preserves scan history, separates artifact evidence from publisher trust, makes remediation authority explicit, and gives defensive AI canaries a place in the same operational record.
 
-The honest promise is smaller—and more useful—than “secure your software”:
+The honest promise is smaller, and more useful, than “secure your software”:
 
 > Audit a code folder. See what is vulnerable, what is verifiable, what needs human judgment, and whether an automated system crossed a boundary you told it not to cross.
 

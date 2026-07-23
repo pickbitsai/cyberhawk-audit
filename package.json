@@ -12,11 +12,10 @@
     "report": "node scripts/generate-report.mjs",
     "watchlist:import": "node scripts/import-watchlist.mjs",
     "demo:serve": "node scripts/demo-server.mjs",
-    "demo:video": "node scripts/render-demo-video.mjs",
-    "site:preview": "node scripts/site-preview-server.mjs"
+    "demo:video": "node scripts/render-demo-video.mjs"
   },
   "engines": {
-    "node": ">=22.5.0"
+    "node": ">=22.13.0"
   },
   "devDependencies": {
     "playwright": "^1.58.2"

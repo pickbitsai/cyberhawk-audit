@@ -131,5 +131,11 @@ export function relativeProject(target, source) {
   const normalizedTarget = path.win32.normalize(target);
   const normalizedSource = path.win32.normalize(source);
   const relative = path.win32.relative(normalizedTarget, normalizedSource);
-  return relative && !relative.startsWith("..") ? relative.split(/[\\/]/)[0] : "(external)";
+  if (!relative || relative.startsWith("..")) return "(external)";
+  const segments = relative.split(/[\\/]/);
+  // A single-segment relative path is the lockfile itself at the target root
+  // (single-project scan) — the first segment would be "package-lock.json",
+  // not a project name. Attribute it to the target's own folder instead.
+  if (segments.length === 1) return path.win32.basename(normalizedTarget) || "(root)";
+  return segments[0];
 }

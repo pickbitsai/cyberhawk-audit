@@ -121,3 +121,30 @@ export function dashboardState(db) {
   const auditEvents = db.prepare("SELECT * FROM audit_events ORDER BY id DESC LIMIT 50").all();
   return { latestRun, statusRows, severityRows, trustRows, recentRuns, detections, tools, canaries, canaryEvents, auditEvents };
 }
+
+// Server-side redaction for the public/presentation view. The browser hides
+// these fields too, but hiding only in the browser means anyone who opens the
+// network tab (or the raw /api/state URL) during a screen-share still sees the
+// full inventory, target paths, and canary markers. Strip them before they
+// leave the process so ?view=public is actually safe.
+export function redactPublic(state) {
+  const scrubPath = () => "local portfolio";
+  return {
+    ...state,
+    latestRun: state.latestRun ? { ...state.latestRun, target: scrubPath() } : null,
+    recentRuns: state.recentRuns.map((r) => ({ ...r, target: scrubPath() })),
+    // Detections carry package@version of OUR own dependencies — omit entirely
+    // in public view; the aggregate counts (statusRows/severityRows) remain.
+    detections: [],
+    canaries: state.canaries.map((c) => ({ ...c, name: "controlled local test", marker: "redacted" })),
+    canaryEvents: state.canaryEvents.map((e) => ({
+      id: e.id, occurred_at: e.occurred_at, name: "controlled local test",
+      remote_addr: "redacted", method: e.method, path: "redacted",
+    })),
+    tools: state.tools.map((t) => ({
+      status: t.status, asset_name: t.asset_name, digest_match: t.digest_match,
+      slsa_verified: t.slsa_verified, slsa_available: t.slsa_available,
+    })),
+    auditEvents: [],
+  };
+}
