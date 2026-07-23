@@ -10,6 +10,7 @@
     "trust:audit": "node scripts/trust-audit.mjs",
     "dashboard": "node scripts/dashboard-server.mjs",
     "report": "node scripts/generate-report.mjs",
+    "watchlist:build": "node scripts/build-watchlist.mjs",
     "watchlist:import": "node scripts/import-watchlist.mjs",
     "demo:serve": "node scripts/demo-server.mjs",
     "demo:video": "node scripts/render-demo-video.mjs"

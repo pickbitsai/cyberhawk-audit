@@ -4,10 +4,13 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const DEFAULT_ALLOWED_HOST = 'vbfwzpztnvfktydozgir.supabase.co';
 const MAX_BYTES = 1024 * 1024;
 
-export function normalizeFeedUrl(value, allowedHost = DEFAULT_ALLOWED_HOST) {
+// No host is hardcoded: the hosted-feed path is optional, and the caller names
+// the host it trusts via --allow-host. The primary, backend-free path is
+// build-watchlist.mjs (filter the public data.json locally, no host at all).
+export function normalizeFeedUrl(value, allowedHost) {
+  if (!allowedHost) throw new Error('An allowed host is required (pass --allow-host <feed-host>).');
   const url = new URL(value);
   if (url.protocol !== 'https:') throw new Error('Watchlist feeds must use HTTPS.');
   if (url.username || url.password) throw new Error('Watchlist URLs cannot contain credentials.');
@@ -31,7 +34,7 @@ function parseArgs(argv) {
     args[key.slice(2)] = value;
     index += 1;
   }
-  if (!args.url || !args.output) throw new Error('Usage: node scripts/import-watchlist.mjs --url <personal-rss-url> --output <watchlist.txt>');
+  if (!args.url || !args.output) throw new Error('Usage: node scripts/import-watchlist.mjs --url <personal-rss-url> --allow-host <feed-host> --output <watchlist.txt>');
   return args;
 }
 
@@ -51,8 +54,8 @@ async function fetchBounded(url) {
 
 export async function run(argv = process.argv.slice(2)) {
   const args = parseArgs(argv);
-  const allowedHost = args['allow-host'] || DEFAULT_ALLOWED_HOST;
-  const url = normalizeFeedUrl(args.url, allowedHost);
+  if (!args['allow-host']) throw new Error('Pass --allow-host <feed-host> for the hosted-feed path (or use build-watchlist.mjs, which needs no host).');
+  const url = normalizeFeedUrl(args.url, args['allow-host']);
   const raw = await fetchBounded(url);
   const cves = extractCves(raw);
   const output = resolve(args.output);

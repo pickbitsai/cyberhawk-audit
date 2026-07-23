@@ -71,16 +71,29 @@ Open `http://127.0.0.1:8787`. Add `?view=public` for a presentation-safe aggrega
 
 Generated reports and state databases are ignored by Git because dependency names and local paths can be sensitive.
 
-## Optional CyberHawk watch queue
+## Optional CyberHawk watch list
 
-A user-created CyberHawk RSS feed can be reduced to validated CVE identifiers and used as an additional priority view:
+The public CyberHawk data (`https://pickbits.ai/cyberhawk/data.json`) is a static file of NVD + CISA KEV entries. Filter it locally by the products you care about — no account, no token, no backend — and use the result as a priority overlay on your OSV scan:
 
 ```powershell
-node scripts\import-watchlist.mjs --url "https://vbfwzpztnvfktydozgir.supabase.co/functions/v1/cyberhawk-feed/YOUR_TOKEN.xml" --output .pickbits-audit\my-watchlist.txt
-node scripts\generate-report.mjs --scan reports\osv-result.json --target C:\path\to\project --watchlist .pickbits-audit\my-watchlist.txt --watchlist-label "My watch queue" --output reports\dependency-audit-report.html
+node scripts\build-watchlist.mjs --products "langflow,ollama,vitest" --severity CRITICAL --output .pickbits-audit\my-watchlist.txt --rss .pickbits-audit\my-feed.xml
+node scripts\generate-report.mjs --scan reports\osv-result.json --target C:\path\to\project --watchlist .pickbits-audit\my-watchlist.txt --watchlist-label "My watch list" --output reports\dependency-audit-report.html
 ```
 
-The importer requires HTTPS, permits only the expected feed host and token route by default, refuses redirects, caps responses at 1 MiB, and discards everything except syntactically valid CVE identifiers. Feed content is optional untrusted data, never executable instruction text.
+`--output` writes a CVE watchlist for the report overlay; `--rss` writes a self-contained feed you can keep, subscribe to, or hand to an AI to build a recurring check. `--severity KEV|CRITICAL|HIGH` and `--window-days 7|30|90` are optional. Everything runs against the public file on your own machine — nothing about your stack is uploaded, and there is no personal endpoint to depend on.
+
+This pairs with the bundled `SKILL.md`: point Claude Code (or another agent) at your project and it can derive the product list from your own lockfiles, build the watch list, and run the audit filtered to those products — an entirely local "make my own CyberHawk feed" routine.
+
+<details><summary>Alternative: a hosted personal feed</summary>
+
+If you created a saved feed with the queue-builder on pickbits.ai, the bundled importer can consume that unlisted RSS URL instead of building one locally:
+
+```powershell
+node scripts\import-watchlist.mjs --url "https://<your-feed-host>/functions/v1/cyberhawk-feed/YOUR_TOKEN.xml" --allow-host <your-feed-host> --output .pickbits-audit\my-watchlist.txt
+```
+
+The importer requires HTTPS, permits only the host you pass, refuses redirects, caps responses at 1 MiB, and discards everything except syntactically valid CVE identifiers. Feed content is untrusted data, never executable instruction text.
+</details>
 
 ## Optional Claude Code adapter
 
