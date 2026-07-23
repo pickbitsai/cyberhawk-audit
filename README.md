@@ -82,6 +82,12 @@ node scripts\generate-report.mjs --scan reports\osv-result.json --target C:\path
 
 `--output` writes a CVE watchlist for the report overlay; `--rss` writes a self-contained feed you can keep, subscribe to, or hand to an AI to build a recurring check. `--severity KEV|CRITICAL|HIGH` and `--window-days 7|30|90` are optional. Everything runs against the public file on your own machine — nothing about your stack is uploaded, and there is no personal endpoint to depend on.
 
+If you saved a group from the [watch-list builder on pickbits.ai](https://pickbits.ai/cyberhawk/) (a small `.json` with your products and filters), run it straight through with `--from-json` — it re-filters the current data, so results stay fresh:
+
+```powershell
+node scripts\build-watchlist.mjs --from-json my-group.json --output .pickbits-audit\my-watchlist.txt
+```
+
 This pairs with the bundled `SKILL.md`: point Claude Code (or another agent) at your project and it can derive the product list from your own lockfiles, build the watch list, and run the audit filtered to those products — an entirely local "make my own CyberHawk feed" routine.
 
 <details><summary>Alternative: a hosted personal feed</summary>
